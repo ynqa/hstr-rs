@@ -1,0 +1,12 @@
+[package]
+name = "hstr-rs"
+version = "0.1.0"
+authors = ["ynqa <un.pensiero.vano@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+clap = "3.1.12"
+dirs = "4.0.0"
+libc = "0.2.107"
+promptio = "0.1.0"
+radix_trie = "0.2.1"
