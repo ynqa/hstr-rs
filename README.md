@@ -2,7 +2,7 @@
 
 A minimum [*hstr*](https://github.com/dvorka/hstr) clone in Rust,
 and serves as an experimental project of
-[ynqa/promptio](https://github.com/ynqa/promptio) toolkit.
+[ynqa/promkit](https://github.com/ynqa/promkit) toolkit.
 
 ## Getting Started
 

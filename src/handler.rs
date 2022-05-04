@@ -1,6 +1,6 @@
 use std::io;
 
-use promptio::{
+use promkit::{
     edit::{Register, SelectBox},
     readline, select, EventHandleFn, ExitCode, Result,
 };

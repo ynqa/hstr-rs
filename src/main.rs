@@ -7,7 +7,7 @@ use std::rc::Rc;
 use clap::{Arg, Command};
 
 use libc::{ioctl, TIOCSTI};
-use promptio::{
+use promkit::{
     self, build::Builder, crossterm::style, grapheme::Graphemes, readline, select, state::Render,
     termutil, Prompt,
 };
@@ -41,7 +41,7 @@ fn home_dir() -> String {
         .to_string()
 }
 
-fn main() -> promptio::Result<()> {
+fn main() -> promkit::Result<()> {
     let zsh_history = home_dir() + "/.zsh_history";
 
     let histroy_path = Arg::new("path")
@@ -82,7 +82,7 @@ fn main() -> promptio::Result<()> {
         out: io::stdout(),
         handler: Rc::new(RefCell::new(KeyBind::default())),
         pre_run: Some(Box::new(
-            |out: &mut io::Stdout, state: &mut State| -> promptio::Result<()> {
+            |out: &mut io::Stdout, state: &mut State| -> promkit::Result<()> {
                 state.readline.render(out)?;
                 termutil::hide_cursor(out)?;
                 state.select.render(out)?;
@@ -90,13 +90,13 @@ fn main() -> promptio::Result<()> {
             },
         )),
         initialize: Some(Box::new(
-            |out: &mut io::Stdout, state: &mut State| -> promptio::Result<()> {
+            |out: &mut io::Stdout, state: &mut State| -> promkit::Result<()> {
                 handler::finalize(state)?;
                 state.readline.pre_render(out)
             },
         )),
         finalize: Some(Box::new(
-            |out: &mut io::Stdout, _: &mut State| -> promptio::Result<()> { termutil::clear(out) },
+            |out: &mut io::Stdout, _: &mut State| -> promkit::Result<()> { termutil::clear(out) },
         )),
         state: Box::new(State {
             trie,

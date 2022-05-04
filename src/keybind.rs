@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io;
 
-use promptio::{
+use promkit::{
     crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers},
     grapheme::Graphemes,
     handler, keybind, readline, select, ExitCode, Handler, Output, Result,
