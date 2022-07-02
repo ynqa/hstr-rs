@@ -1,8 +1,7 @@
 use std::io;
 
 use promkit::{
-    edit::{Register, SelectBox},
-    readline, select, EventHandleFn, ExitCode, Result,
+    readline, register::Register, select, selectbox::SelectBox, EventHandleFn, ExitCode, Result,
 };
 use radix_trie::TrieCommon;
 

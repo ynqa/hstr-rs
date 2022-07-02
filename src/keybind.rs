@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::io;
 
 use promkit::{
-    edit::Buffer,
+    buffer::Buffer,
     crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers},
     grapheme::Graphemes,
     handler, keybind, readline, select, ExitCode, Handler, Output, Result,
@@ -30,9 +30,11 @@ impl Default for KeyBind {
         let mut kb = KeyBind(keybind::KeyBind::<State> {
             event_mapping: HashMap::default(),
             handle_input: Some(crate::handler::input_char()),
-            handle_resize: Some(crate::handler::wrap_readline_handler(
-                handler::reload::<Buffer, readline::state::With, io::Stdout>(),
-            )),
+            handle_resize: Some(crate::handler::wrap_readline_handler(handler::reload::<
+                Buffer,
+                readline::state::With,
+                io::Stdout,
+            >())),
         });
         kb.0.assign(vec![
             (
