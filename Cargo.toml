@@ -8,5 +8,5 @@ edition = "2018"
 clap = "3.1.12"
 dirs = "4.0.0"
 libc = "0.2.107"
-promkit = "0.1.0"
+promkit = { git = "https://github.com/ynqa/promkit" }
 radix_trie = "0.2.1"

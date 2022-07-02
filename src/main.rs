@@ -75,7 +75,7 @@ fn main() -> promkit::Result<()> {
 
     let readline = readline::Builder::default().num_lines(1);
     let select = select::Builder::default()
-        .selected_color(style::Color::DarkBlue)
+        .label_color(style::Color::DarkBlue)
         .init_move_down_lines(1)
         .suffix_after_trim("...");
     let mut hstr = Prompt::<State> {
