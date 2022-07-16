@@ -5,13 +5,12 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 use clap::{Arg, Command};
-
 use libc::{ioctl, TIOCSTI};
 use promkit::{
-    self, build::Builder, crossterm::style, grapheme::Graphemes, readline, select, state::Render,
-    termutil, Prompt,
+    self, build::Builder, crossterm::style, grapheme::Graphemes, readline, register::Register,
+    select, selectbox::SelectBox, state::Render, termutil, Prompt,
 };
-use radix_trie::Trie;
+use radix_trie::{Trie, TrieCommon};
 
 mod handler;
 mod keybind;
@@ -75,6 +74,13 @@ fn main() -> promkit::Result<()> {
 
     let readline = readline::Builder::default().num_lines(1);
     let select = select::Builder::default()
+        .selectbox(
+            trie.iter()
+                .fold(Box::new(SelectBox::default()), |mut sb, item| {
+                    sb.register(item.0.to_string());
+                    sb
+                }),
+        )
         .label_color(style::Color::DarkBlue)
         .init_move_down_lines(1)
         .suffix_after_trim("...");
@@ -86,7 +92,17 @@ fn main() -> promkit::Result<()> {
                 state.readline.render(out)?;
                 termutil::hide_cursor(out)?;
                 state.select.render(out)?;
-                termutil::show_cursor(out)
+                termutil::show_cursor(out)?;
+                state.readline.0.prev = state.readline.0.editor.clone();
+                state.select.0.prev = state.select.0.editor.clone();
+                Ok(())
+            },
+        )),
+        post_run: Some(Box::new(
+            |_: &mut io::Stdout, state: &mut State| -> promkit::Result<()> {
+                state.readline.0.next = state.readline.0.editor.clone();
+                state.select.0.next = state.select.0.editor.clone();
+                Ok(())
             },
         )),
         initialize: Some(Box::new(
@@ -104,9 +120,7 @@ fn main() -> promkit::Result<()> {
             select: *select.state()?,
         }),
     };
-    let (line, exit_code) = hstr.run()?;
-    if exit_code == 0 {
-        fake_input(&line);
-    }
+    let line: String = hstr.run()?;
+    fake_input(&line);
     Ok(())
 }

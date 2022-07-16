@@ -1,8 +1,6 @@
 use std::io;
 
-use promkit::{
-    readline, register::Register, select, selectbox::SelectBox, EventHandleFn, ExitCode, Result,
-};
+use promkit::{readline, register::Register, select, selectbox::SelectBox, EventHandleFn, Result};
 use radix_trie::TrieCommon;
 
 use crate::State;
@@ -55,8 +53,7 @@ pub fn erase_all() -> Box<EventHandleFn<State>> {
     )
 }
 
-pub fn finalize(state: &mut State) -> Result<Option<ExitCode>> {
-    let prev = state.select.0.editor.clone();
+pub fn finalize(state: &mut State) -> Result<bool> {
     let query = &state.readline.0.editor.data;
     state.select.1.selected_cursor_pos = 0;
     state.select.0.editor = match state.trie.get_raw_descendant(query) {
@@ -68,10 +65,5 @@ pub fn finalize(state: &mut State) -> Result<Option<ExitCode>> {
             }),
         None => Box::new(SelectBox::default()),
     };
-    state
-        .select
-        .0
-        .input_stream
-        .push((prev, state.select.0.editor.clone()));
-    Ok(None)
+    Ok(false)
 }

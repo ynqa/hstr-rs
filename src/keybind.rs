@@ -5,7 +5,7 @@ use promkit::{
     buffer::Buffer,
     crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers},
     grapheme::Graphemes,
-    handler, keybind, readline, select, ExitCode, Handler, Output, Result,
+    handler, keybind, readline, select, Handler, Output, Result,
 };
 use radix_trie::Trie;
 
@@ -18,7 +18,7 @@ pub struct State {
 impl Output for State {
     type Output = String;
 
-    fn output(&self) -> Self::Output {
+    fn output(&self) -> String {
         self.select.output()
     }
 }
@@ -113,12 +113,7 @@ impl Default for KeyBind {
 }
 
 impl Handler<State> for KeyBind {
-    fn handle(
-        &mut self,
-        ev: Event,
-        out: &mut io::Stdout,
-        state: &mut State,
-    ) -> Result<Option<ExitCode>> {
+    fn handle(&mut self, ev: Event, out: &mut io::Stdout, state: &mut State) -> Result<bool> {
         self.0.handle(ev, out, state)
     }
 }
