@@ -55,7 +55,7 @@ pub fn erase_all() -> Box<EventHandleFn<State>> {
 
 pub fn finalize(state: &mut State) -> Result<bool> {
     let query = &state.readline.0.editor.data;
-    state.select.1.selected_cursor_pos = 0;
+    state.select.1.selected_cursor_position = 0;
     state.select.0.editor = match state.trie.get_raw_descendant(query) {
         Some(subtrie) => subtrie
             .iter()
