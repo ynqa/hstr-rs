@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 clap = "3.1.12"
-dirs = "4.0.0"
+dirs = "5.0.1"
 libc = "0.2.107"
-promkit = { git = "https://github.com/ynqa/promkit" }
+promkit = "0.2.0"
 radix_trie = "0.2.1"

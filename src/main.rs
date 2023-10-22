@@ -1,21 +1,13 @@
-use std::cell::RefCell;
-use std::fs::File;
-use std::io::{self, BufRead};
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
+use std::{
+    fs::File,
+    io::{self, BufRead},
+    path::{Path, PathBuf},
+};
 
 use clap::{Arg, Command};
 use libc::{ioctl, TIOCSTI};
-use promkit::{
-    self, build::Builder, crossterm::style, grapheme::Graphemes, readline, register::Register,
-    select, selectbox::SelectBox, state::Render, termutil, Prompt,
-};
+use promkit::{self, preset::QuerySelect};
 use radix_trie::{Trie, TrieCommon};
-
-mod handler;
-mod keybind;
-
-use crate::keybind::{KeyBind, State};
 
 fn fake_input(s: &str) {
     for byte in s.as_bytes() {
@@ -40,7 +32,7 @@ fn home_dir() -> String {
         .to_string()
 }
 
-fn main() -> promkit::Result<()> {
+fn main() -> promkit::error::Result {
     let zsh_history = home_dir() + "/.zsh_history";
 
     let histroy_path = Arg::new("path")
@@ -60,67 +52,29 @@ fn main() -> promkit::Result<()> {
 
     let path = matches.value_of_os("path").map(PathBuf::from).unwrap();
 
-    let mut trie = Trie::<Graphemes, usize>::new();
+    let mut trie = Trie::<String, usize>::new();
     let file = File::open(path)?;
     let mut buf = Vec::<String>::new();
     for line in io::BufReader::new(file).lines().flatten() {
         let trimed = line.trim();
         buf.push(trimed.to_string());
         if !line.ends_with('\\') {
-            trie.insert(Graphemes::from(buf.join("").replace('\\', "")), 0);
+            trie.insert(buf.join("").replace('\\', ""), 0);
             buf.clear();
         }
     }
 
-    let readline = readline::Builder::default().num_lines(1);
-    let select = select::Builder::default()
-        .selectbox(
-            trie.iter()
-                .fold(Box::new(SelectBox::default()), |mut sb, item| {
-                    sb.register(item.0.to_string());
-                    sb
-                }),
-        )
-        .label_color(style::Color::DarkBlue)
-        .init_move_down_lines(1)
-        .suffix_after_trim("...");
-    let mut hstr = Prompt::<State> {
-        out: io::stdout(),
-        handler: Rc::new(RefCell::new(KeyBind::default())),
-        pre_run: Some(Box::new(
-            |out: &mut io::Stdout, state: &mut State| -> promkit::Result<()> {
-                state.readline.render(out)?;
-                termutil::hide_cursor(out)?;
-                state.select.render(out)?;
-                termutil::show_cursor(out)?;
-                state.readline.0.prev = state.readline.0.editor.clone();
-                state.select.0.prev = state.select.0.editor.clone();
-                Ok(())
-            },
-        )),
-        post_run: Some(Box::new(
-            |_: &mut io::Stdout, state: &mut State| -> promkit::Result<()> {
-                state.readline.0.next = state.readline.0.editor.clone();
-                state.select.0.next = state.select.0.editor.clone();
-                Ok(())
-            },
-        )),
-        initialize: Some(Box::new(
-            |out: &mut io::Stdout, state: &mut State| -> promkit::Result<()> {
-                handler::finalize(state)?;
-                state.readline.pre_render(out)
-            },
-        )),
-        finalize: Some(Box::new(
-            |out: &mut io::Stdout, _: &mut State| -> promkit::Result<()> { termutil::clear(out) },
-        )),
-        state: Box::new(State {
-            trie,
-            readline: *readline.state()?,
-            select: *select.state()?,
-        }),
-    };
-    let line: String = hstr.run()?;
-    fake_input(&line);
+    let mut hstr = QuerySelect::new(
+        trie.clone().iter().map(|item| item.0),
+        move |text, items| -> Vec<String> {
+            match trie.get_raw_descendant(text) {
+                Some(subtrie) => subtrie.iter().map(|item| item.0.clone()).collect(),
+                None => items.clone(),
+            }
+        },
+    )
+    .prompt()?;
+
+    fake_input(&hstr.run()?);
     Ok(())
 }
